@@ -89,6 +89,7 @@ class Board:
                                            self.stopFire, 
                                            coord)
             self.fires[coord] = (defer, call)
+            self.fg_tiles[coord] = EMPTY
         return defer
 
 
