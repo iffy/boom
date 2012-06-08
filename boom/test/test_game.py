@@ -57,21 +57,68 @@ class BoardTest(TestCase):
                                  c,r,tile,actual))
 
 
-    def test_bomb(self):
+    def test_dropBomb(self):
         """
         You can place a bomb, and get a Deferred back that is called
         when the bomb goes off.
         """
         clock = Clock()
         board = Board(reactor=clock)
-        board.generate(3,3)
+        board.generate(1,1)
+        
         d = board.dropBomb((0,0), 10, 1)
+        self.assertTrue(board.bombs[(0,0)], "bomb is on the board")
+        
         clock.advance(9)
-        self.assertEqual(d.called, False, "No explosiong yet")
+        self.assertEqual(d.called, False, "No explosion yet")
         clock.advance(1)
         self.assertEqual(d.called, True, "Now that the time has "
                          "elapsed, the bomb should have gone off")
+        self.assertTrue((0,0) not in board.bombs)
 
+
+    def test_startFire(self):
+        """
+        You can start a fire on a tile and get a Deferred back that
+        fires when the fire is gone.
+        """
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(1,1)
+        
+        d = board.startFire((0,0), 3)
+        self.assertTrue((0,0) in board.fires)
+        
+        clock.advance(2)
+        self.assertEqual(d.called, False, "Still burning")
+        
+        clock.advance(1)
+        self.assertEqual(d.called, True, "Fire is out")
+        self.assertTrue((0,0) not in board.fires)
+
+
+    def test_startFire_overlap(self):
+        """
+        A fire will continue burning if you start it again before
+        it's done.
+        """
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(1,1)
+        
+        d = board.startFire((0,0), 3)
+        self.assertTrue((0,0) in board.fires)
+        
+        clock.advance(2)
+        d2 = board.startFire((0,0), 5)
+        
+        clock.advance(2)
+        self.assertEqual(d.called, False, "Should still burn")
+        self.assertEqual(d2.called, False, "Should still burn")
+        
+        clock.advance(4)
+        self.assertEqual(d.called, True, "Should be done")
+        self.assertEqual(d2.called, True, "Burninate")
 
 
 

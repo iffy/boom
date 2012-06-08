@@ -25,6 +25,8 @@ class Board:
 
     def __init__(self, reactor=reactor):
         self.fg_tiles = {}
+        self.bombs = {}
+        self.fires = {}
         self._reactor = reactor
 
 
@@ -54,6 +56,39 @@ class Board:
         """
         defer = Deferred()
         self._reactor.callLater(fuse, defer.callback, None)
+        self.bombs[coord] = defer
+        
+        # remove bomb after it explodes
+        def rmBomb(r, board, coord):
+            del board.bombs[coord]
+            return r
+        defer.addCallback(rmBomb, self, coord)
+
+        return defer
+
+
+    def stopFire(self, coord):
+        """
+        XXX
+        """
+        d, call = self.fires[coord]
+        d.callback(None)
+        del self.fires[coord]
+
+
+    def startFire(self, coord, burntime):
+        """
+        XXX
+        """
+        if coord in self.fires:
+            defer, call = self.fires[coord]
+            call.delay(burntime)
+        else:
+            defer = Deferred()
+            call = self._reactor.callLater(burntime, 
+                                           self.stopFire, 
+                                           coord)
+            self.fires[coord] = (defer, call)
         return defer
 
 
