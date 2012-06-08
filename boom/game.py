@@ -1,3 +1,10 @@
+"""
+Board and players and such.
+
+@var EMPTY: signifies an empty tile
+@var HARD: signifies a tile which can not be blown up
+@var SOFT: signifies a tile which can be blown up
+"""
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 
