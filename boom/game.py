@@ -19,7 +19,18 @@ class Board:
         3. Players/bombs/items: Tiles may have one or more of the
            moveable things on it (players, bombs, powerups).
 
-    XXX vars
+
+    @ivar bombs: Dictionary whose keys are coordinate tuples
+        and whose values are an implementation detail.  You are
+        welcome to see if a bomb is present by testing coordinates
+        in this dict.
+    
+    @ivar fires: Dictionary whose keys are coordinate tuples.
+        If the tuple is there, the fire is there, though you 
+        shouldn't mess with the value.
+    
+    @ivar fg_tiles: Dictionary of foreground tiles.  Keys are
+        coordinate tuples.
     """
 
 
@@ -32,7 +43,10 @@ class Board:
 
     def generate(self, width, height):
         """
-        XXX
+        Generate a standard board.
+        
+        @param width: Number of tiles wide the board will be
+        @param height: Number of tiles high the board will be
         """
         for x in xrange(width):
             for y in xrange(height):
@@ -45,14 +59,30 @@ class Board:
 
     def fgTile(self, coord):
         """
-        XXX
+        Get the tile at the given location.
+        
+        @param coord: Coordinate tuple.
+        
+        @return: C{EMPTY}, C{HARD} or C{SOFT} (from this module)
         """
         return self.fg_tiles[coord]
 
 
     def dropBomb(self, coord, fuse, size):
         """
-        XXX
+        Place a bomb on the board, and ignite it.
+        
+        @param coord: Coordinate tuple where the bomb will go.
+        
+        @type fuse: int or float
+        @param fuse: Number of seconds until the bomb explodes
+        
+        @type size: int
+        @param size: Size of explosion (number of adjacent tiles
+            affected)
+        
+        @return: A L{Deferred} that will fire when the bomb 
+            explodes.
         """
         defer = Deferred()
         self._reactor.callLater(fuse, defer.callback, None)
@@ -69,7 +99,11 @@ class Board:
 
     def stopFire(self, coord):
         """
-        XXX
+        Put out a fire and notify listening people via the 
+        L{Deferred}.  Used internally by L{startFire}, but maybe
+        we'll let people put out fires with some power.
+        
+        @param coord: Coordinate tuple where fire is
         """
         d, call = self.fires[coord]
         d.callback(None)
@@ -78,7 +112,23 @@ class Board:
 
     def startFire(self, coord, burntime):
         """
-        XXX
+        Start a fire on a tile.  Normally, this will happen as a
+        natural effect of lighting a bomb.  But, hey, let people
+        light fires if they want, eh?
+        
+        If you start a new fire on a currently burning tile, the
+        conflagration will continue until the end of the most 
+        recent ignition.
+        
+        XXX if we start a 10 second fire, then start a 1 second
+        fire 1 second later, it should burn through the 10 seconds.
+        
+        @param coord: Coordinate tuple to ignite
+        
+        @type burntime: int or float
+        @param burntime: Seconds to keep burning.
+        
+        @return: L{Deferred} which fires when the fire is out.
         """
         if coord in self.fires:
             defer, call = self.fires[coord]
