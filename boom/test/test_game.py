@@ -88,6 +88,8 @@ class BoardTest(TestCase):
         
         d = board.startFire((0,0), 3)
         self.assertTrue((0,0) in board.fires)
+        self.assertEqual(board.fgTile((0,0)), EMPTY, "Should clear"
+                         " out the tile")
         
         clock.advance(2)
         self.assertEqual(d.called, False, "Still burning")
