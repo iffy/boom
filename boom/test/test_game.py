@@ -79,7 +79,7 @@ class BoardTest(TestCase):
                          "in these tiles, but they weren't")
 
 
-    def test_dropBomb_startFire_SOFT(self):
+    def test_fallout_single_SOFT(self):
         """
         Bombs should start fires in all SOFT spaces in the 
         area around the bomb.
@@ -101,12 +101,52 @@ class BoardTest(TestCase):
         ])
 
 
-    def test_dropBomb_HARD_adjacent(self):
+    def test_fallout_single_HARD(self):
         """
         If a HARD tile is adjacent to a bomb, no fire should
         be lit on the HARD tile
         """
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(3,3)
+        board.fg_tiles.update({
+            (1,0): HARD,
+            (0,1): HARD,
+            (1,2): HARD,
+            (2,1): HARD,
+        })
         
+        board.dropBomb((1,1), 1, 1)
+        clock.advance(1)
+        self.expectFires(board, [(1,1)])
+
+
+    def test_fallout_edges(self):
+        """
+        Fires can't happen outside the board
+        """
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(5,5)
+        board.dropBomb((0,0), 1, 1)
+        board.dropBomb((4,0), 1, 1)
+        board.dropBomb((0,4), 1, 1)
+        board.dropBomb((4,4), 1, 1)
+        clock.advance(1)
+        self.expectFires(board, [
+            (0,0),
+            (1,0),
+            (0,1),
+            (4,0),
+            (3,0),
+            (4,1),
+            (0,4),
+            (0,3),
+            (1,4),
+            (4,4),
+            (4,3),
+            (3,4),
+        ])
 
 
     def test_startFire(self):
