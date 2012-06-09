@@ -60,6 +60,25 @@ class BoardTest(TestCase):
         self.assertTrue((0,0) not in board.bombs)
 
 
+    def expectFires(self, board, expected):
+        """
+        Test that a C{board} has the C{expected} fires burning.
+        
+        @param board: L{Board}.
+        @param expected: List of tuple coordinates of expected
+            fires.
+        """        
+        expected = set(expected)
+        actual = set(board.fires)
+        
+        missing = expected - actual
+        extra = actual - expected
+        self.assertEqual(extra, set(), "There are some fires "
+                         "in the listed, unexpected tiles")
+        self.assertEqual(missing, set(), "Expected fires to be "
+                         "in these tiles, but they weren't")
+
+
     def test_dropBomb_startFire_SOFT(self):
         """
         Bombs should start fires in all SOFT spaces in the 
@@ -70,25 +89,24 @@ class BoardTest(TestCase):
         board.generate(5,5)
         board.dft_burn = 29
         
-        called = []
-        board.startFire = lambda c,b: called.append((c,b))
         d = board.dropBomb((2,2), 1, 1)
         clock.advance(1)
-        
-        expected = set([
-            ((2,2), 29),
-            ((2,1), 29),
-            ((2,3), 29),
-            ((1,2), 29),
-            ((3,2), 29),
+
+        self.expectFires(board, [
+            (2,2),
+            (2,1),
+            (2,3),
+            (1,2),
+            (3,2),
         ])
-        missing = expected - set(called)
-        extra = set(called) - expected
-        self.assertEqual(extra, set(), "There are some fires "
-                         "in the listed, unexpected tiles")
-        self.assertEqual(missing, set(), "Expected fires to be "
-                         "started in these tiles, but they "
-                         "weren't")
+
+
+    def test_dropBomb_HARD_adjacent(self):
+        """
+        If a HARD tile is adjacent to a bomb, no fire should
+        be lit on the HARD tile
+        """
+        
 
 
     def test_startFire(self):
