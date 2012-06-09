@@ -73,8 +73,8 @@ class BoardTest(TestCase):
         
         missing = expected - actual
         extra = actual - expected
-        self.assertEqual(extra, set(), "There are some fires "
-                         "in the listed, unexpected tiles")
+        self.assertEqual(extra, set(), "There are some unexpected "
+                        "fires in the listed tiles")
         self.assertEqual(missing, set(), "Expected fires to be "
                          "in these tiles, but they weren't")
 
@@ -167,6 +167,35 @@ class BoardTest(TestCase):
             (2,4),
         ])
 
+
+    def test_bomb_light_bomb(self):
+        """
+        A bomb can ignite another bomb prematurely.
+        """
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(3,3)
+        board.dropBomb((0,0), 10, 1)
+        board.dropBomb((1,0), 1, 1)
+        clock.advance(1)
+        self.expectFires(board, [
+            (0,0),
+            (1,0),
+            (0,1),
+            (2,0),
+        ])
+        self.assertEqual(board.bombs, {}, "The bomb should have "
+                         "exploded")
+        clock.advance(10)
+
+
+    def test_fire_smallBomb_bigBomb(self):
+        """
+        A small bomb will obstruct a big bomb's explosion fr
+        """
+        self.fail('write me')
+
+
     def test_startFire(self):
         """
         You can start a fire on a tile and get a Deferred back that
@@ -212,5 +241,23 @@ class BoardTest(TestCase):
         self.assertEqual(d.called, True, "Should be done")
         self.assertEqual(d2.called, True, "Burninate")
 
+
+    def test_startFire_igniteBomb(self):
+        """
+        A fire will ignite a bomb prematurely
+        """
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(1,1)
+        
+        d = board.dropBomb((0,0), 10, 1)
+        d2 = board.startFire((0,0), 1)
+        clock.advance(1)
+        self.assertEqual(board.bombs, {}, "Bomb should be gone")
+        self.assertTrue(d.called, "Should have ignited the bomb")
+        
+        # make sure there's no errors when the original explosion
+        # should happen
+        clock.advance(10)
 
 

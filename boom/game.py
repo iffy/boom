@@ -96,15 +96,9 @@ class Board:
             explodes.
         """
         defer = Deferred()
-        self._reactor.callLater(fuse, defer.callback, None)
-        self.bombs[coord] = (defer, size)
-        
-        # remove bomb after it explodes
-        def rmBomb(r, board, coord):
-            board.detonateBomb(coord)
-            return r
-        defer.addCallback(rmBomb, self, coord)
-
+        call = self._reactor.callLater(fuse,
+                                       self.detonateBomb, coord)
+        self.bombs[coord] = (defer, call, size)
         return defer
 
 
@@ -112,8 +106,12 @@ class Board:
         """
         XXX
         """
-        defer, size = self.bombs[coord]
+        defer, call, size = self.bombs[coord]
         del self.bombs[coord]
+        
+        defer.callback(None)
+        if call.active():
+            call.cancel()
         
         # we did start the fire
         self.startFire(coord, self.dft_burn)
@@ -180,6 +178,8 @@ class Board:
                                            coord)
             self.fires[coord] = (defer, call)
             self.fg_tiles[coord] = EMPTY
+            if coord in self.bombs:
+                self.detonateBomb(coord)
         return defer
 
 
