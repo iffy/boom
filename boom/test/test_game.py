@@ -193,7 +193,22 @@ class BoardTest(TestCase):
         """
         A small bomb will obstruct a big bomb's explosion fr
         """
-        self.fail('write me')
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(5,5)
+        board.dropBomb((2,0), 1, 10)
+        board.dropBomb((2,1), 5, 1)
+        clock.advance(1)
+        self.expectFires(board, [
+            (2,0),
+            (1,0),
+            (0,0),
+            (3,0),
+            (4,0),
+            
+            (2,1),
+            (2,2),
+        ])
 
 
     def test_startFire(self):

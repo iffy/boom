@@ -132,6 +132,8 @@ class Board:
                 if tile == HARD:
                     directions.remove(d)
                     continue
+                if target in self.bombs:
+                    directions.remove(d)
                 self.startFire(target, self.dft_burn)
 
 
