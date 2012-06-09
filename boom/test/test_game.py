@@ -251,7 +251,7 @@ class BoardTest(TestCase):
         clock.advance(2)
         d2 = board.startFire((0,0), 5)
         
-        clock.advance(2)
+        clock.advance(1)
         self.assertEqual(d.called, False, "Should still burn")
         self.assertEqual(d2.called, False, "Should still burn")
         

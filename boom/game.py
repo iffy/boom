@@ -8,6 +8,8 @@ Board and players and such.
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 
+import time
+
 EMPTY = 0
 HARD = 1
 SOFT = 2
@@ -174,7 +176,7 @@ class Board:
         """
         if coord in self.fires:
             defer, call = self.fires[coord]
-            call.delay(burntime)
+            call.reset(burntime)
         else:
             defer = Deferred()
             call = self._reactor.callLater(burntime, 
@@ -188,13 +190,3 @@ class Board:
 
 
 
-class Bomb:
-    
-    def __init__(self, fuse, size):
-        self.fuse = fuse
-        self.size = size
-
-    def ignite(self):
-        d = Deferred()
-        reactor.callLater(self.fuse, d.callback, self)
-        return d
