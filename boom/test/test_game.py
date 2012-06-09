@@ -1,24 +1,7 @@
 from twisted.trial.unittest import TestCase
 from twisted.internet.task import Clock
 
-from boom.game import Bomb, Board, EMPTY, HARD, SOFT
-
-
-class BombTest(TestCase):
-
-    timeout = 2
-
-    def test_init(self):
-        bomb = Bomb(3, 4)
-        self.assertEqual(bomb.fuse, 3)
-        self.assertEqual(bomb.size, 4)
-
-    def test_ignite(self):
-        bomb = Bomb(1, 4)
-        d = bomb.ignite()
-        def check(result):
-            self.assertEqual(result, bomb)
-        return d.addCallback(check)
+from boom.game import Board, EMPTY, HARD, SOFT
 
 
 class BoardTest(TestCase):
@@ -75,6 +58,37 @@ class BoardTest(TestCase):
         self.assertEqual(d.called, True, "Now that the time has "
                          "elapsed, the bomb should have gone off")
         self.assertTrue((0,0) not in board.bombs)
+
+
+    def test_dropBomb_startFire_SOFT(self):
+        """
+        Bombs should start fires in all SOFT spaces in the 
+        area around the bomb.
+        """
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(5,5)
+        board.dft_burn = 29
+        
+        called = []
+        board.startFire = lambda c,b: called.append((c,b))
+        d = board.dropBomb((2,2), 1, 1)
+        clock.advance(1)
+        
+        expected = set([
+            ((2,2), 29),
+            ((2,1), 29),
+            ((2,3), 29),
+            ((1,2), 29),
+            ((3,2), 29),
+        ])
+        missing = expected - set(called)
+        extra = set(called) - expected
+        self.assertEqual(extra, set(), "There are some fires "
+                         "in the listed, unexpected tiles")
+        self.assertEqual(missing, set(), "Expected fires to be "
+                         "started in these tiles, but they "
+                         "weren't")
 
 
     def test_startFire(self):

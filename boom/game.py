@@ -38,7 +38,11 @@ class Board:
     
     @ivar fg_tiles: Dictionary of foreground tiles.  Keys are
         coordinate tuples.
+    
+    @ivar dft_burn: Number of seconds flames last by default.
     """
+    
+    dft_burn = 1
 
 
     def __init__(self, reactor=reactor):
@@ -93,15 +97,37 @@ class Board:
         """
         defer = Deferred()
         self._reactor.callLater(fuse, defer.callback, None)
-        self.bombs[coord] = defer
+        self.bombs[coord] = (defer, size)
         
         # remove bomb after it explodes
         def rmBomb(r, board, coord):
-            del board.bombs[coord]
+            board.detonateBomb(coord)
             return r
         defer.addCallback(rmBomb, self, coord)
 
         return defer
+
+
+    def detonateBomb(self, coord):
+        """
+        XXX
+        """
+        defer, size = self.bombs[coord]
+        del self.bombs[coord]
+        
+        # we did start the fire
+        self.startFire(coord, self.dft_burn)
+        # up
+        directions = [
+            (0, -1),
+            (0, 1),
+            (-1, 0),
+            (1, 0),
+        ]
+        for i in xrange(1, size+1):
+            for d in directions:
+                target = (coord[0]+(d[0]*i), coord[1]+(d[1]*i))
+                self.startFire(target, self.dft_burn)
 
 
     def stopFire(self, coord):
