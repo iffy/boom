@@ -125,13 +125,14 @@ class Board:
             (1, 0),
         ]
         for i in xrange(1, size+1):
-            for d in directions:
+            for d in list(directions):
                 target = (coord[0]+(d[0]*i), coord[1]+(d[1]*i))
                 try:
                     tile = self.fg_tiles[target]
                 except KeyError:
                     continue
                 if tile == HARD:
+                    directions.remove(d)
                     continue
                 self.startFire(target, self.dft_burn)
 

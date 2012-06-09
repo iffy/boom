@@ -149,6 +149,24 @@ class BoardTest(TestCase):
         ])
 
 
+    def test_fallout_obstruction(self):
+        """
+        If a larger bomb is obstructed by a HARD tile, it should
+        not continue beyond the tile.
+        """
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(5,5)
+        board.dropBomb((2,1), 1, 4)
+        clock.advance(1)
+        self.expectFires(board, [
+            (2,0),
+            (2,1),
+            (2,2),
+            (2,3),
+            (2,4),
+        ])
+
     def test_startFire(self):
         """
         You can start a fire on a tile and get a Deferred back that
