@@ -4,6 +4,19 @@ from twisted.internet.task import Clock
 from boom.game import Board, EMPTY, HARD, SOFT, Pawn, YoureDead
 
 
+
+def bnc():
+    """
+    Get a L{Board} with a C{Clock} for a reactor.
+    
+    @return: Tuple of L{Board}, C{Clock} instances.
+    """
+    clock = Clock()
+    board = Board(reactor=clock)
+    return board, clock
+
+
+
 class BoardTest(TestCase):
 
     timeout = 2
@@ -45,8 +58,7 @@ class BoardTest(TestCase):
         You can place a bomb, and get a Deferred back that is called
         when the bomb goes off.
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(1,1)
         
         d = board.dropBomb((0,0), 10, 1)
@@ -94,8 +106,7 @@ class BoardTest(TestCase):
         Bombs should start fires in all SOFT spaces in the 
         area around the bomb.
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(5,5)
         board.dft_burn = 29
         
@@ -116,8 +127,7 @@ class BoardTest(TestCase):
         If a HARD tile is adjacent to a bomb, no fire should
         be lit on the HARD tile
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(3,3)
         board.fg_tiles.update({
             (1,0): HARD,
@@ -139,8 +149,7 @@ class BoardTest(TestCase):
         """
         Fires can't happen outside the board
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(5,5)
         board.dropBomb((0,0), 1, 1)
         board.dropBomb((4,0), 1, 1)
@@ -161,8 +170,7 @@ class BoardTest(TestCase):
         If a larger bomb is obstructed by a HARD tile, it should
         not continue beyond the tile.
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(5,5)
         board.dropBomb((2,1), 1, 4)
         clock.advance(1)
@@ -179,8 +187,7 @@ class BoardTest(TestCase):
         """
         A bomb can ignite another bomb prematurely.
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(3,3)
         board.dropBomb((0,0), 10, 1)
         board.dropBomb((1,0), 1, 1)
@@ -199,8 +206,7 @@ class BoardTest(TestCase):
         """
         A small bomb will obstruct a big bomb's explosion fr
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(5,5)
         board.dropBomb((2,0), 1, 10)
         board.dropBomb((2,1), 5, 1)
@@ -219,8 +225,7 @@ class BoardTest(TestCase):
         You can start a fire on a tile and get a Deferred back that
         fires when the fire is gone.
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(1,1)
         
         d = board.startFire((0,0), 3)
@@ -241,8 +246,7 @@ class BoardTest(TestCase):
         A fire will continue burning if you start it again before
         it's done.
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(1,1)
         
         d = board.startFire((0,0), 3)
@@ -264,8 +268,7 @@ class BoardTest(TestCase):
         """
         A fire will ignite a bomb prematurely
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(1,1)
         
         d = board.dropBomb((0,0), 10, 1)
@@ -300,12 +303,18 @@ class BoardTest(TestCase):
         If a Pawn is present when a fire starts, the Pawn dies.
         """
         pawn = Pawn()
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.insertPawn((0,0), pawn)
         board.startFire((0,0), 1)
         self.assertFalse(pawn.alive, "Pawn should be dead now")
 
+
+    def test_placePawn(self):
+        """
+        You can move a pawn to a particular tile
+        """
+        pawn = Pawn()
+        board, clock = bnc()
 
 
 class PawnTest(TestCase):
@@ -340,8 +349,7 @@ class PawnTest(TestCase):
         You can drop bombs on the board, which uses up one of the
         bombs until it explodes.
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(5,5)
         pawn = Pawn()
         pawn.fuse = 3
@@ -360,8 +368,7 @@ class PawnTest(TestCase):
         """
         You can't drop bombs if you're dead
         """
-        clock = Clock()
-        board = Board(reactor=clock)
+        board, clock = bnc()
         board.generate(5,5)
         
         pawn = Pawn()
