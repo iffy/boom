@@ -313,5 +313,34 @@ class PawnTest(TestCase):
         self.assertEqual(pawn.board, None)
         self.assertEqual(pawn.loc, None)
         
+
+    def test_kill(self):
+        """
+        You can kill pawns
+        """
+        pawn = Pawn()
+        pawn.kill()
+        self.assertEqual(pawn.alive, False)
+
+
+    def test_dropBomb(self):
+        """
+        You can drop bombs on the board, which uses up one of the
+        bombs until it explodes.
+        """
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(5,5)
+        pawn = Pawn()
+        pawn.fuse = 3
         
-        
+        board.insertPawn((0,0), pawn)
+        pawn.dropBomb()
+        self.assertEqual(pawn.bombs, 0, "Should use up a bomb")
+        self.assertTrue((0,0) in board.bombs, "Bomb should be on"
+                        " the board")
+        clock.advance(3)
+        self.assertEqual(pawn.bombs, 1, "Should get the bomb back")
+        self.assertFalse((0,0) in board.bombs)
+
+

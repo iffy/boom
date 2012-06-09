@@ -224,4 +224,21 @@ class Pawn:
         self.name = name
 
 
+    def kill(self):
+        """
+        Kill this pawn dead.
+        """
+        self.alive = False
 
+
+    def dropBomb(self):
+        """
+        Drop a bomb on the C{board} at the current location.
+        """
+        self.bombs -= 1
+        d = self.board.dropBomb(self.loc, self.fuse, 
+                                self.flame_size)
+        def bombExploded(result, pawn):
+            pawn.bombs += 1
+
+        d.addCallback(bombExploded, self)
