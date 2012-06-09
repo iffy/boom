@@ -65,10 +65,20 @@ class BoardTest(TestCase):
         Test that a C{board} has the C{expected} fires burning.
         
         @param board: L{Board}.
-        @param expected: List of tuple coordinates of expected
-            fires.
-        """        
-        expected = set(expected)
+        @param expected: List of strings with X showing where
+            fire ought to be.  Like this for a 3x3::
+            
+                ' XX',
+                '  X',
+                '   ',
+
+        """
+        expected_coords = set()
+        for i,line in enumerate(expected):
+            for j,char in enumerate(line):
+                if char.lower() == 'x':
+                    expected_coords.add((j,i))
+        expected = expected_coords
         actual = set(board.fires)
         
         missing = expected - actual
@@ -93,11 +103,11 @@ class BoardTest(TestCase):
         clock.advance(1)
 
         self.expectFires(board, [
-            (2,2),
-            (2,1),
-            (2,3),
-            (1,2),
-            (3,2),
+            '     ',
+            '  x  ',
+            ' xxx ',
+            '  x  ',
+            '     ',
         ])
 
 
@@ -118,7 +128,11 @@ class BoardTest(TestCase):
         
         board.dropBomb((1,1), 1, 1)
         clock.advance(1)
-        self.expectFires(board, [(1,1)])
+        self.expectFires(board, [
+            '   ',
+            ' x ',
+            '   ',
+        ])
 
 
     def test_fallout_edges(self):
@@ -134,18 +148,11 @@ class BoardTest(TestCase):
         board.dropBomb((4,4), 1, 1)
         clock.advance(1)
         self.expectFires(board, [
-            (0,0),
-            (1,0),
-            (0,1),
-            (4,0),
-            (3,0),
-            (4,1),
-            (0,4),
-            (0,3),
-            (1,4),
-            (4,4),
-            (4,3),
-            (3,4),
+            'xx xx',
+            'x   x',
+            '     ',
+            'x   x',
+            'xx xx',
         ])
 
 
@@ -160,11 +167,11 @@ class BoardTest(TestCase):
         board.dropBomb((2,1), 1, 4)
         clock.advance(1)
         self.expectFires(board, [
-            (2,0),
-            (2,1),
-            (2,2),
-            (2,3),
-            (2,4),
+            '  X  ',
+            '  X  ',
+            '  X  ',
+            '  X  ',
+            '  X  ',
         ])
 
 
@@ -179,10 +186,9 @@ class BoardTest(TestCase):
         board.dropBomb((1,0), 1, 1)
         clock.advance(1)
         self.expectFires(board, [
-            (0,0),
-            (1,0),
-            (0,1),
-            (2,0),
+            'xxx',
+            'x  ',
+            '   ',
         ])
         self.assertEqual(board.bombs, {}, "The bomb should have "
                          "exploded")
@@ -200,14 +206,11 @@ class BoardTest(TestCase):
         board.dropBomb((2,1), 5, 1)
         clock.advance(1)
         self.expectFires(board, [
-            (2,0),
-            (1,0),
-            (0,0),
-            (3,0),
-            (4,0),
-            
-            (2,1),
-            (2,2),
+            'xxxxx',
+            '  x  ',
+            '  x  ',
+            '     ',
+            '     ',
         ])
 
 

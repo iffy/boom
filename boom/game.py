@@ -104,7 +104,9 @@ class Board:
 
     def detonateBomb(self, coord):
         """
-        XXX
+        Detonate a bomb.
+        
+        @param coord: Tuple coordinate of bomb to detonate.
         """
         defer, call, size = self.bombs[coord]
         del self.bombs[coord]
