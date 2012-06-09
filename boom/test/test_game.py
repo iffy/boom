@@ -1,7 +1,7 @@
 from twisted.trial.unittest import TestCase
 from twisted.internet.task import Clock
 
-from boom.game import Board, EMPTY, HARD, SOFT, Pawn
+from boom.game import Board, EMPTY, HARD, SOFT, Pawn, YoureDead
 
 
 class BoardTest(TestCase):
@@ -295,6 +295,18 @@ class BoardTest(TestCase):
                         "about the Pawn")
 
 
+    def test_fire_kills_pawn(self):
+        """
+        If a Pawn is present when a fire starts, the Pawn dies.
+        """
+        pawn = Pawn()
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.insertPawn((0,0), pawn)
+        board.startFire((0,0), 1)
+        self.assertFalse(pawn.alive, "Pawn should be dead now")
+
+
 
 class PawnTest(TestCase):
 
@@ -342,5 +354,21 @@ class PawnTest(TestCase):
         clock.advance(3)
         self.assertEqual(pawn.bombs, 1, "Should get the bomb back")
         self.assertFalse((0,0) in board.bombs)
+
+
+    def test_dropBomb_dead(self):
+        """
+        You can't drop bombs if you're dead
+        """
+        clock = Clock()
+        board = Board(reactor=clock)
+        board.generate(5,5)
+        
+        pawn = Pawn()
+        board.insertPawn((0,0), pawn)
+        pawn.kill()
+        self.assertRaises(YoureDead, pawn.dropBomb)
+        self.assertTrue((0,0) not in board.bombs)
+
 
 

@@ -15,6 +15,10 @@ HARD = 1
 SOFT = 2
 
 
+class YoureDead(Exception):
+    pass
+
+
 class Board:
     """
     The board is made of 3 layers:
@@ -169,6 +173,8 @@ class Board:
         
         XXX if we start a 10 second fire, then start a 1 second
         fire 1 second later, it should burn through the 10 seconds.
+        This is currently not the case, but doesn't matter because
+        all fires burn the same length.
         
         @param coord: Coordinate tuple to ignite
         
@@ -189,6 +195,8 @@ class Board:
             self.fg_tiles[coord] = EMPTY
             if coord in self.bombs:
                 self.detonateBomb(coord)
+            for pawn in [x for x in self.pawns if x.loc==coord]:
+                pawn.kill()
         return defer
 
 
@@ -235,6 +243,8 @@ class Pawn:
         """
         Drop a bomb on the C{board} at the current location.
         """
+        if not self.alive:
+            raise YoureDead("Dead people can't drop bombs")
         self.bombs -= 1
         d = self.board.dropBomb(self.loc, self.fuse, 
                                 self.flame_size)
@@ -242,3 +252,6 @@ class Pawn:
             pawn.bombs += 1
 
         d.addCallback(bombExploded, self)
+
+
+
