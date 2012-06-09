@@ -1,7 +1,7 @@
 from twisted.trial.unittest import TestCase
 from twisted.internet.task import Clock
 
-from boom.game import Board, EMPTY, HARD, SOFT
+from boom.game import Board, EMPTY, HARD, SOFT, Pawn
 
 
 class BoardTest(TestCase):
@@ -279,3 +279,39 @@ class BoardTest(TestCase):
         clock.advance(10)
 
 
+    def test_insertPawn(self):
+        """
+        You can put a pawn on the board (and into the game)
+        """
+        pawn = Pawn()
+        board = Board()
+        board.insertPawn((0,0), pawn)
+        self.assertEqual(pawn.board, board, "Pawn should know "
+                         "he's on the board.")
+        self.assertEqual(pawn.loc, (0,0), "Pawn should know where"
+                         " he is on the board")
+        
+        self.assertTrue(pawn in board.pawns, "Board should know "
+                        "about the Pawn")
+
+
+
+class PawnTest(TestCase):
+
+
+    def test_attrs(self):
+        """
+        A pawn should have these attributes by default
+        """
+        pawn = Pawn('john')
+        self.assertEqual(pawn.name, 'john')
+        self.assertEqual(pawn.speed, 0.5)
+        self.assertEqual(pawn.bombs, 1, "Should have one bomb")
+        self.assertEqual(pawn.flame_size, 1)
+        self.assertEqual(pawn.fuse, 2.0)
+        self.assertEqual(pawn.alive, True)
+        self.assertEqual(pawn.board, None)
+        self.assertEqual(pawn.loc, None)
+        
+        
+        

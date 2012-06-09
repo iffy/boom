@@ -41,6 +41,8 @@ class Board:
     @ivar fg_tiles: Dictionary of foreground tiles.  Keys are
         coordinate tuples.
     
+    @ivar pawns: C{set} of L{Pawns<Pawn>} on the board.
+    
     @ivar dft_burn: Number of seconds flames last by default.
     """
     
@@ -51,6 +53,7 @@ class Board:
         self.fg_tiles = {}
         self.bombs = {}
         self.fires = {}
+        self.pawns = set()
         self._reactor = reactor
 
 
@@ -187,6 +190,38 @@ class Board:
             if coord in self.bombs:
                 self.detonateBomb(coord)
         return defer
+
+
+    def insertPawn(self, coord, pawn):
+        """
+        Add a Pawn to the board.
+        
+        @param coord: Tuple coordinate to place the pawn
+        @param pawn: L{Pawn} to insert.
+        """
+        pawn.board = self
+        pawn.loc = coord
+        self.pawns.add(pawn)
+        
+
+
+class Pawn:
+    """
+    I am a player (or NPC) on a L{Board}.  I walk around and put
+    bombs down.
+    """
+    
+    speed = 0.5
+    bombs = 1
+    flame_size = 1
+    fuse = 2.0
+    alive = True
+    board = None
+    loc = None
+
+
+    def __init__(self, name=None):
+        self.name = name
 
 
 
