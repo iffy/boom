@@ -1,7 +1,8 @@
 from twisted.trial.unittest import TestCase
 from twisted.internet.task import Clock
 
-from boom.game import Board, EMPTY, HARD, SOFT, Pawn, YoureDead
+from boom.game import (Board, EMPTY, HARD, SOFT, Pawn, YoureDead,
+                       IllegalMove)
 
 
 
@@ -521,5 +522,42 @@ class PawnTest(TestCase):
         pawn.move('u')
         self.assertEqual(called[0], (pawn, (0,0)))
 
+
+    def test_illegal_moves(self):
+        """
+        Pawns can only move into EMPTY tiles.  Can't move into
+        bombs, HARD, SOFT or off the board.
+        """
+        board, clock = bnc()
+        board.generate(3,3)
+        pawn = Pawn()
+        board.insertPawn((0,0), pawn)
+        
+        # off the board
+        self.assertRaises(IllegalMove, pawn.move, 'l')
+        self.assertRaises(IllegalMove, pawn.move, 'u')
+        
+        pawn.move('d')
+        self.assertEqual(pawn.loc, (0,1))
+        
+        # HARD
+        self.assertRaises(IllegalMove, pawn.move, 'r')
+        # SOFT
+        self.assertRaises(IllegalMove, pawn.move, 'd')
+        
+        pawn.dropBomb()
+        pawn.move('u')
+        
+        # on bomb
+        self.assertRaises(IllegalMove, pawn.move, 'd')
+
+
+    def test_move_dead(self):
+        """
+        You can't move when dead
+        """
+        pawn = Pawn()
+        pawn.kill()
+        self.assertRaises(YoureDead, pawn.move, 'u')
 
 

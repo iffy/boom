@@ -15,8 +15,8 @@ HARD = 1
 SOFT = 2
 
 
-class YoureDead(Exception):
-    pass
+class YoureDead(Exception): pass
+class IllegalMove(Exception): pass
 
 
 class Board:
@@ -279,6 +279,8 @@ class Pawn:
         Note: currently, pawns can move "infinitely" fast.  Later,
         speed will be added so that they can't.
         """
+        if not self.alive:
+            raise YoureDead("Dead peope can't move")
         delta = {
             'u': (0,-1),
             'd': (0,1),
@@ -286,6 +288,14 @@ class Pawn:
             'r': (1,0),
         }[direction]
         target = (self.loc[0]+delta[0], self.loc[1]+delta[1])
+        try:
+            tile = self.board.fgTile(target)
+        except KeyError:
+            raise IllegalMove("That would be off the board")
+        if tile != EMPTY:
+            raise IllegalMove("There's a brick there")
+        if target in self.board.bombs:
+            raise IllegalMove("There's a bomb there")
         self.board.pawnMoved(self, target)
 
 
