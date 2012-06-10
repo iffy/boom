@@ -114,9 +114,9 @@ class BoardTest(TestCase):
 
     def assertCoordsEqual(self, a, b, msg=''):
         """
+        Assert that two sets of coordinates are the same, and
+        display a visual representation of them if they are not.
         """
-        print 'a', list(a)
-        print 'b', list(b)
         self.assertEqual(set(a), set(b), '%s:\n%s\n--- not ---\n%s' % (
             msg or 'Coordinate maps not equal',
             '\n'.join(coord2map(a)),

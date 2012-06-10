@@ -210,6 +210,17 @@ class Board:
         pawn.board = self
         pawn.loc = coord
         self.pawns.add(pawn)
+        self.fg_tiles[pawn.loc] = EMPTY
+        directions = [
+            (1,0),
+            (-1,0),
+            (0,1),
+            (0,-1),
+        ]
+        for d in directions:
+            target = (pawn.loc[0]+d[0], pawn.loc[1]+d[1])
+            if target in self.fg_tiles:
+                self.fg_tiles[target] = EMPTY
         
 
 
