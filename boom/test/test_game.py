@@ -16,6 +16,46 @@ def bnc():
     return board, clock
 
 
+def map2coord(visual):
+    """
+    Convert a 'visual' representation of bits into coordinates...
+    err... so this::
+    
+        [' x ','   ','x  ']
+    
+    Becomes this:
+    
+        [(1,0), (0,2)]
+
+    @rtype: list
+    """
+    ret = []
+    for i,line in enumerate(visual):
+        for j,char in enumerate(line):
+            if char != ' ':
+                ret.append((j,i))
+    return ret
+
+
+def coord2map(coords):
+    """
+    The inverse of L{map2coord}.
+    """
+    ret = []
+    width = max([x[0] for x in coords] + [0])
+    height = max([x[1] for x in coords] + [0])
+    for y in xrange(height+1):
+        row = ''
+        for x in xrange(width+1):
+            coord = (x,y)
+            if coord in coords:
+                row += 'x'
+            else:
+                row += ' '
+        ret.append(row)
+    return ret
+
+
 
 class BoardTest(TestCase):
 
@@ -72,6 +112,18 @@ class BoardTest(TestCase):
         self.assertTrue((0,0) not in board.bombs)
 
 
+    def assertCoordsEqual(self, a, b, msg=''):
+        """
+        """
+        print 'a', list(a)
+        print 'b', list(b)
+        self.assertEqual(set(a), set(b), '%s:\n%s\n--- not ---\n%s' % (
+            msg or 'Coordinate maps not equal',
+            '\n'.join(coord2map(a)),
+            '\n'.join(coord2map(b)),
+        ))
+
+
     def expectFires(self, board, expected):
         """
         Test that a C{board} has the C{expected} fires burning.
@@ -90,7 +142,7 @@ class BoardTest(TestCase):
             for j,char in enumerate(line):
                 if char.lower() == 'x':
                     expected_coords.add((j,i))
-        expected = expected_coords
+        expected = set(map2coord(expected))
         actual = set(board.fires)
         
         missing = expected - actual
@@ -288,6 +340,7 @@ class BoardTest(TestCase):
         """
         pawn = Pawn()
         board = Board()
+        board.generate(1,1)
         board.insertPawn((0,0), pawn)
         self.assertEqual(pawn.board, board, "Pawn should know "
                          "he's on the board.")
@@ -297,6 +350,42 @@ class BoardTest(TestCase):
         self.assertTrue(pawn in board.pawns, "Board should know "
                         "about the Pawn")
 
+
+    def test_insertPawn_makeRoom(self):
+        """
+        When pawns are inserted, a space should be made for them.
+        For now, make a space on all sides.  Later, this could
+        change.
+        """
+        board = Board()
+        board.generate(5,5)
+        locs = map2coord([
+            'x   x',
+            '     ',
+            '  x  ',
+            '     ',
+            'x   x',
+        ])
+        pawns = []
+        for loc in locs:
+            pawns.append(Pawn())
+            board.insertPawn(loc, pawns[-1])
+        
+        expected_empty = map2coord([
+            'xx xx',
+            'x x x',
+            ' xxx ',
+            'x x x',
+            'xx xx',
+        ])
+        actual_empty = set()
+        for k,v in board.fg_tiles.items():
+            if v == EMPTY:
+                actual_empty.add(k)
+        
+        self.assertCoordsEqual(expected_empty, actual_empty,
+                               "Expected empty tiles to be thus")
+        
 
     def test_fire_kills_pawn(self):
         """
@@ -309,12 +398,13 @@ class BoardTest(TestCase):
         self.assertFalse(pawn.alive, "Pawn should be dead now")
 
 
-    def test_placePawn(self):
+    def test_movePawn(self):
         """
         You can move a pawn to a particular tile
         """
         pawn = Pawn()
         board, clock = bnc()
+        board.insertPawn((0,0), pawn)
 
 
 class PawnTest(TestCase):
