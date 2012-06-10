@@ -160,18 +160,19 @@ class BoardTest(TestCase):
         area around the bomb.
         """
         board, clock = bnc()
-        board.generate(5,5)
+        board.generate(3,3)
+        board.fg_tiles.update({
+            (1,1): EMPTY,
+        })
         board.dft_burn = 29
         
-        d = board.dropBomb((2,2), 1, 1)
+        d = board.dropBomb((1,1), 1, 1)
         clock.advance(1)
 
         self.expectFires(board, [
-            '     ',
-            '  x  ',
-            ' xxx ',
-            '  x  ',
-            '     ',
+            ' x ',
+            'xxx',
+            ' x ',
         ])
 
 
@@ -187,6 +188,7 @@ class BoardTest(TestCase):
             (0,1): HARD,
             (1,2): HARD,
             (2,1): HARD,
+            (1,1): EMPTY,
         })
         
         board.dropBomb((1,1), 1, 1)
@@ -204,6 +206,12 @@ class BoardTest(TestCase):
         """
         board, clock = bnc()
         board.generate(5,5)
+        board.fg_tiles.update({
+            (0,0): EMPTY,
+            (4,4): EMPTY,
+            (0,4): EMPTY,
+            (4,0): EMPTY,
+        })
         board.dropBomb((0,0), 1, 1)
         board.dropBomb((4,0), 1, 1)
         board.dropBomb((0,4), 1, 1)
@@ -225,16 +233,18 @@ class BoardTest(TestCase):
         """
         board, clock = bnc()
         board.generate(5,5)
+        board.fg_tiles.update({
+            (2,1): EMPTY,
+        })
         board.dropBomb((2,1), 1, 4)
         clock.advance(1)
         self.expectFires(board, [
             '  X  ',
             '  X  ',
             '  X  ',
-            '  X  ',
-            '  X  ',
+            '     ',
+            '     ',
         ])
-        self.fail('Soft things arent obstructing properly')
 
 
     def test_bomb_light_bomb(self):
@@ -243,6 +253,10 @@ class BoardTest(TestCase):
         """
         board, clock = bnc()
         board.generate(3,3)
+        board.fg_tiles.update({
+            (0,0): EMPTY,
+            (1,0): EMPTY,
+        })
         board.dropBomb((0,0), 10, 1)
         board.dropBomb((1,0), 1, 1)
         clock.advance(1)
@@ -262,6 +276,15 @@ class BoardTest(TestCase):
         """
         board, clock = bnc()
         board.generate(5,5)
+        empties = map2coord([
+            'xxxxx',
+            '  x  ',
+            '  x  ',
+            '  x  ',
+            '  x  ',
+        ])
+        for empty in empties:
+            board.fg_tiles[empty] = EMPTY
         board.dropBomb((2,0), 1, 10)
         board.dropBomb((2,1), 5, 1)
         clock.advance(1)
