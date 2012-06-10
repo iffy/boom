@@ -228,7 +228,8 @@ class Board:
         A pawn has entered a new location
         """
         pawn.loc = new_loc
-
+        if new_loc in self.fires:
+            pawn.kill()
 
 
 class Pawn:
