@@ -398,13 +398,18 @@ class BoardTest(TestCase):
         self.assertFalse(pawn.alive, "Pawn should be dead now")
 
 
-    def test_movePawn(self):
+    def test_pawnMoved(self):
         """
-        You can move a pawn to a particular tile
+        When a pawn is moved, the board knows.
         """
         pawn = Pawn()
         board, clock = bnc()
+        board.generate(3,3)
         board.insertPawn((0,0), pawn)
+        board.pawnMoved(pawn, (1,0))
+        self.assertEqual(pawn.loc, (1,0), "Should know that it"
+                         " moved")
+        
 
 
 class PawnTest(TestCase):
@@ -416,7 +421,6 @@ class PawnTest(TestCase):
         """
         pawn = Pawn('john')
         self.assertEqual(pawn.name, 'john')
-        self.assertEqual(pawn.speed, 0.5)
         self.assertEqual(pawn.bombs, 1, "Should have one bomb")
         self.assertEqual(pawn.flame_size, 1)
         self.assertEqual(pawn.fuse, 2.0)
@@ -466,6 +470,43 @@ class PawnTest(TestCase):
         pawn.kill()
         self.assertRaises(YoureDead, pawn.dropBomb)
         self.assertTrue((0,0) not in board.bombs)
+
+
+    def test_move(self):
+        """
+        You can move it up,down,left or right, and pawnMoved will
+        be called after each move.
+        """
+        board, clock = bnc()
+        board.generate(5,5)
+        board.fg_tiles[(1,1)] = EMPTY
+
+        pawn = Pawn()
+        board.insertPawn((0,0), pawn)
+        
+        # fake out pawnMoved
+        called = []
+        real_pawnMoved = board.pawnMoved
+        def fake_pawnMoved(*args):
+            called.append(args)
+            return real_pawnMoved(*args)
+        board.pawnMoved = fake_pawnMoved
+        
+        pawn.move('r')
+        self.assertEqual(called[0], (pawn, (1,0)), "Should have "
+                         "called pawnMoved")
+
+        called.pop()
+        pawn.move('d')
+        self.assertEqual(called[0], (pawn, (1,1)))
+        
+        called.pop()
+        pawn.move('l')
+        self.assertEqual(called[0], (pawn, (0,1)))
+        
+        called.pop()
+        pawn.move('u')
+        self.assertEqual(called[0], (pawn, (0,0)))
 
 
 

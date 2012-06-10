@@ -221,7 +221,14 @@ class Board:
             target = (pawn.loc[0]+d[0], pawn.loc[1]+d[1])
             if target in self.fg_tiles:
                 self.fg_tiles[target] = EMPTY
-        
+
+
+    def pawnMoved(self, pawn, new_loc):
+        """
+        A pawn has entered a new location
+        """
+        pawn.loc = new_loc
+
 
 
 class Pawn:
@@ -230,7 +237,6 @@ class Pawn:
     bombs down.
     """
     
-    speed = 0.5
     bombs = 1
     flame_size = 1
     fuse = 2.0
@@ -264,5 +270,21 @@ class Pawn:
 
         d.addCallback(bombExploded, self)
 
+
+    def move(self, direction):
+        """
+        Move the pawn in a direction.
+        
+        Note: currently, pawns can move "infinitely" fast.  Later,
+        speed will be added so that they can't.
+        """
+        delta = {
+            'u': (0,-1),
+            'd': (0,1),
+            'l': (-1,0),
+            'r': (1,0),
+        }[direction]
+        target = (self.loc[0]+delta[0], self.loc[1]+delta[1])
+        self.board.pawnMoved(self, target)
 
 
