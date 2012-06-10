@@ -220,8 +220,8 @@ class BoardTest(TestCase):
 
     def test_fallout_obstruction(self):
         """
-        If a larger bomb is obstructed by a HARD tile, it should
-        not continue beyond the tile.
+        If a larger bomb is obstructed by a HARD/SOFT tile, it 
+        should not continue beyond the tile.
         """
         board, clock = bnc()
         board.generate(5,5)
@@ -234,6 +234,7 @@ class BoardTest(TestCase):
             '  X  ',
             '  X  ',
         ])
+        self.fail('Soft things arent obstructing properly')
 
 
     def test_bomb_light_bomb(self):
