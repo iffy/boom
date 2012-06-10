@@ -263,6 +263,8 @@ class Pawn:
         """
         if not self.alive:
             raise YoureDead("Dead people can't drop bombs")
+        if self.bombs <= 0:
+            raise IllegalMove("You're out of bombs")
         self.bombs -= 1
         d = self.board.dropBomb(self.loc, self.fuse, 
                                 self.flame_size)
@@ -297,5 +299,6 @@ class Pawn:
         if target in self.board.bombs:
             raise IllegalMove("There's a bomb there")
         self.board.pawnMoved(self, target)
+
 
 

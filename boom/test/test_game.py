@@ -486,6 +486,15 @@ class PawnTest(TestCase):
         self.assertTrue((0,0) not in board.bombs)
 
 
+    def test_dropBomb_havenone(self):
+        """
+        You can't drop bombs if you don't have any
+        """
+        pawn = Pawn()
+        pawn.bombs = 0
+        self.assertRaises(IllegalMove, pawn.dropBomb)
+
+
     def test_move(self):
         """
         You can move it up,down,left or right, and pawnMoved will
