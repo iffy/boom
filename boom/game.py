@@ -77,17 +77,6 @@ class Board:
                     self.fg_tiles[coord] = SOFT
 
 
-    def fgTile(self, coord):
-        """
-        Get the tile at the given location.
-        
-        @param coord: Coordinate tuple.
-        
-        @return: C{EMPTY}, C{HARD} or C{SOFT} (from this module)
-        """
-        return self.fg_tiles[coord]
-
-
     def dropBomb(self, coord, fuse, size):
         """
         Place a bomb on the board, and ignite it.
@@ -293,7 +282,7 @@ class Pawn:
         }[direction]
         target = (self.loc[0]+delta[0], self.loc[1]+delta[1])
         try:
-            tile = self.board.fgTile(target)
+            tile = self.board.fg_tiles[target]
         except KeyError:
             raise IllegalMove("That would be off the board")
         if tile != EMPTY:

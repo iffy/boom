@@ -88,7 +88,7 @@ class BoardTest(TestCase):
         ]
         for r,row in enumerate(expected):
             for c,tile in enumerate(row):
-                actual = board.fgTile((c,r))
+                actual = board.fg_tiles[(c,r)]
                 self.assertEqual(actual, tile, "Expected foreground"
                                  "tile at %s,%s to be %s, not %s"%(
                                  c,r,tile,actual))
@@ -307,7 +307,7 @@ class BoardTest(TestCase):
         
         d = board.startFire((0,0), 3)
         self.assertTrue((0,0) in board.fires)
-        self.assertEqual(board.fgTile((0,0)), EMPTY, "Should clear"
+        self.assertEqual(board.fg_tiles[(0,0)], EMPTY, "Should clear"
                          " out the tile")
         
         clock.advance(2)
