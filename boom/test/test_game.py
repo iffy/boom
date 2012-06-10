@@ -409,6 +409,19 @@ class BoardTest(TestCase):
         board.pawnMoved(pawn, (1,0))
         self.assertEqual(pawn.loc, (1,0), "Should know that it"
                          " moved")
+
+
+    def test_pawnMoved_fire(self):
+        """
+        If a pawn moves into fire, they die
+        """
+        pawn = Pawn()
+        board, clock = bnc()
+        board.generate(3,3)
+        board.insertPawn((0,0), pawn)
+        board.startFire((1,0), 1)
+        board.pawnMoved(pawn, (1,0))
+        self.assertEqual(pawn.alive, False, "Pawn should die")
         
 
 
