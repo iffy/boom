@@ -63,7 +63,7 @@ def _printBoard():
             if coord in board.fires:
                 row += 'x'
                 continue
-            tile = board.fgTile(coord)
+            tile = board.fg_tiles[coord]
             row += {
                 EMPTY: ' ',
                 SOFT: ':',
