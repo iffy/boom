@@ -1,46 +1,12 @@
 from twisted.internet import reactor, stdio, task
-from twisted.internet.protocol import Protocol
+from twisted.internet.endpoints import TCP4ServerEndpoint
 
+from boom.protocol import SimpleFactory
 from boom.game import (Board, Pawn, YoureDead, IllegalMove, SOFT, 
                        EMPTY, HARD)
 
 board = Board()
 board.generate(11,11)
-
-pawn = Pawn('Me')
-pawn.bombs = 3
-pawn.flame_size = 2
-board.insertPawn((0,0), pawn)
-
-
-class PlayerProtocol(Protocol):
-
-
-    def __init__(self, pawn):
-        self.pawn = pawn
-
-    def dataReceived(self, data):
-        for c in data:
-            if c in ['w','a','s','d']:
-                direction = {
-                    'w':'u',
-                    'a':'l',
-                    's':'d',
-                    'd':'r',
-                }[c]
-                try:
-                    self.pawn.move(direction)
-                except YoureDead:
-                    print "You're dead"
-                except IllegalMove:
-                    pass
-            elif c == 'e':
-                try:
-                    self.pawn.dropBomb()
-                except YoureDead:
-                    print "You're dead"
-        printBoard()
-
 
 
 def _printBoard():
@@ -74,17 +40,25 @@ def _printBoard():
     yield '+' + '-'*board_width + '+'
 
 
+factory = SimpleFactory(board)
+
+
 def printBoard():
-    print '\n'.join(_printBoard())
+    lines = list(_printBoard())
+    print '\n'.join(lines)
+    for protocol in factory.protocols:
+        protocol.transport.write('\r\n'.join(lines) + '\r\n')
+    
 
 board_width = max([x[0] for x in board.fg_tiles]) + 1
 board_height = max([x[1] for x in board.fg_tiles]) + 1
 
 lc = task.LoopingCall(printBoard)
-lc.start(0.1)
+lc.start(0.2)
 
 
-
-stdio.StandardIO(PlayerProtocol(pawn))
+endpoint = TCP4ServerEndpoint(reactor, 8900)
+endpoint.listen(factory)
 reactor.run()
+
 

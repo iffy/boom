@@ -1,11 +1,13 @@
 from twisted.internet.protocol import Protocol, Factory
+import string
 
 
-from boom.game import Pawn
+from boom.game import Pawn, YoureDead, IllegalMove
 
 
 class SimpleProtocol(Protocol):
 
+    num = 0
 
     move_mapping = {
         'w': 'u',
@@ -16,7 +18,9 @@ class SimpleProtocol(Protocol):
 
     def connectionMade(self):
         self.factory.protocols.append(self)
-        self.pawn = Pawn()
+        name = string.uppercase[self.num % len(string.uppercase)]
+        SimpleProtocol.num += 1
+        self.pawn = Pawn(name)
         self.factory.board.insertPawn((0,0), self.pawn)
 
 
@@ -28,9 +32,20 @@ class SimpleProtocol(Protocol):
     def dataReceived(self, data):
         for k in data:
             if k in self.move_mapping:
-                self.pawn.move(self.move_mapping[k])
+                try:
+                    self.pawn.move(self.move_mapping[k])
+                except YoureDead, e:
+                    pass
+                except IllegalMove, e:
+                    pass
             elif k == 'e':
-                self.pawn.dropBomb()
+                try:
+                    self.pawn.dropBomb()
+                except YoureDead, e:
+                    pass
+                except IllegalMove, e:
+                    pass
+
 
 
 class SimpleFactory(Factory):
