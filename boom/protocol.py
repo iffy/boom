@@ -1,11 +1,14 @@
-from twisted.internet.protocol import Protocol, Factory
+from twisted.internet.protocol import Factory
+from twisted.conch.telnet import Telnet, ECHO, SGA, LINEMODE
 import string
+
+from twisted.python import log
 
 
 from boom.game import Pawn, YoureDead, IllegalMove
 
 
-class SimpleProtocol(Protocol):
+class TelnetProtocol(Telnet):
 
     num = 0
 
@@ -18,10 +21,18 @@ class SimpleProtocol(Protocol):
 
     def connectionMade(self):
         self.factory.protocols.append(self)
+        self.will(ECHO).addErrback(log.msg)
+        self.will(SGA).addErrback(log.msg)
+        self.wont(LINEMODE).addErrback(log.msg)
+
         name = string.uppercase[self.num % len(string.uppercase)]
-        SimpleProtocol.num += 1
+        TelnetProtocol.num += 1
         self.pawn = Pawn(name)
         self.factory.board.insertPawn((0,0), self.pawn)
+
+
+    def enableLocal(self, option):
+        return option in (ECHO, SGA)
 
 
     def connectionLost(self, reason):
@@ -29,7 +40,7 @@ class SimpleProtocol(Protocol):
         self.factory.board.pawns.remove(self.pawn)
 
 
-    def dataReceived(self, data):
+    def applicationDataReceived(self, data):
         for k in data:
             if k in self.move_mapping:
                 try:
@@ -48,16 +59,16 @@ class SimpleProtocol(Protocol):
 
 
 
-class SimpleFactory(Factory):
+class TelnetFactory(Factory):
     """
-    A factory for making L{SimpleProtocol}s
+    A factory for making L{TelnetProtocol}s
     
     @ivar board: the game board on which I'll be playing
-    @ivar protocols: A list of L{SimpleProtocol} instances currently
+    @ivar protocols: A list of L{TelnetProtocol} instances currently
         in use.
     """
     
-    protocol = SimpleProtocol
+    protocol = TelnetProtocol
     
     
     def __init__(self, board):

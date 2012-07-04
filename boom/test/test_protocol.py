@@ -3,11 +3,11 @@ from twisted.test.proto_helpers import StringTransport
 
 
 from boom.game import Board, Pawn
-from boom.protocol import SimpleProtocol, SimpleFactory
+from boom.protocol import TelnetProtocol, TelnetFactory
 
 
 
-class SimpleFactoryTest(TestCase):
+class TelnetFactoryTest(TestCase):
 
 
     def test_init(self):
@@ -15,13 +15,13 @@ class SimpleFactoryTest(TestCase):
         You initialize the factory with a Board
         """
         board = object()
-        f = SimpleFactory(board)
+        f = TelnetFactory(board)
         self.assertEqual(f.board, board)
         self.assertEqual(f.protocols, [])
 
 
 
-class SimpleProtocolTest(TestCase):
+class TelnetProtocolTest(TestCase):
 
 
     def test_connect_disconnect(self):
@@ -31,10 +31,11 @@ class SimpleProtocolTest(TestCase):
         that too.
         """
         board = Board()
-        factory = SimpleFactory(board)
-        proto = SimpleProtocol()
+        factory = TelnetFactory(board)
+        proto = TelnetProtocol()
         proto.factory = factory
-        proto.connectionMade()
+        transport = StringTransport()
+        proto.makeConnection(transport)
         self.assertTrue(isinstance(proto.pawn, Pawn))
         self.assertTrue(proto.pawn in board.pawns, "Should "
                         "add a pawn to the board")
@@ -56,7 +57,7 @@ class SimpleProtocolTest(TestCase):
         You can control the pawn with the protocol
         """
         board = Board()
-        factory = SimpleFactory(board)
+        factory = TelnetFactory(board)
         protocol = factory.buildProtocol(None)
         transport = StringTransport()
         protocol.makeConnection(transport)

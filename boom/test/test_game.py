@@ -113,6 +113,18 @@ class BoardTest(TestCase):
         self.assertTrue((0,0) not in board.bombs)
 
 
+    def test_dropBomb_twice(self):
+        """
+        You can't place a bomb on top of another bomb
+        """
+        board, clock = bnc()
+        board.generate(1,1)
+        
+        d = board.dropBomb((0,0), 10, 1)
+        self.assertTrue(board.bombs[(0,0)], "bomb is on the board")
+        return self.assertFailure(board.dropBomb((0,0), 10, 1), IllegalMove)
+
+
     def assertCoordsEqual(self, a, b, msg=''):
         """
         Assert that two sets of coordinates are the same, and
@@ -517,6 +529,21 @@ class PawnTest(TestCase):
         pawn = Pawn()
         pawn.bombs = 0
         self.assertRaises(IllegalMove, pawn.dropBomb)
+
+
+    def test_dropBomb_bomb(self):
+        """
+        You can't drop a bomb on a tile that already has a bomb.
+        """
+        board, clock = bnc()
+        board.generate(5,5)
+        
+        pawn = Pawn()
+        pawn.bombs = 2
+        board.insertPawn((0,0), pawn)
+        pawn.dropBomb()
+        self.assertRaises(IllegalMove, pawn.dropBomb)
+        self.assertEqual(pawn.bombs, 1, "Should still have one")
 
 
     def test_move(self):

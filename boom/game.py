@@ -5,7 +5,7 @@ Board and players and such.
 @var HARD: signifies a tile which can not be blown up
 @var SOFT: signifies a tile which can be blown up
 """
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 from twisted.internet.defer import Deferred
 
 
@@ -92,14 +92,16 @@ class Board:
         @return: A L{Deferred} that will fire when the bomb 
             explodes.
         """
+        if coord in self.bombs:
+            return defer.fail(IllegalMove('Bomb there already'))
         # Set the bomb up to explode later
-        defer = Deferred()
+        d = Deferred()
         call = self._reactor.callLater(fuse,
                                        self.detonateBomb, coord)
         
         # Place the bomb on the board
-        self.bombs[coord] = (defer, call, size)
-        return defer
+        self.bombs[coord] = (d, call, size)
+        return d
 
 
     def detonateBomb(self, coord):
@@ -286,6 +288,10 @@ class Pawn:
     def dropBomb(self):
         """
         Drop a bomb on the C{board} at the current location.
+        
+        @raise YoureDead: If you're... well... dead.
+        @raise IllegalMove: If there's already a bomb there or
+            you're out of bombs.
         """
         if not self.alive:
             raise YoureDead("Dead people can't drop bombs")
@@ -300,7 +306,7 @@ class Pawn:
         # Get the bomb back after it explodes
         def bombExploded(result, pawn):
             pawn.bombs += 1
-        d.addCallback(bombExploded, self)
+        d.addBoth(bombExploded, self)
 
 
     def move(self, direction):

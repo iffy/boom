@@ -1,7 +1,7 @@
 from twisted.internet import reactor, stdio, task
 from twisted.internet.endpoints import TCP4ServerEndpoint
 
-from boom.protocol import SimpleFactory
+from boom.protocol import TelnetFactory
 from boom.game import (Board, Pawn, YoureDead, IllegalMove, SOFT, 
                        EMPTY, HARD)
 
@@ -40,12 +40,12 @@ def _printBoard():
     yield '+' + '-'*board_width + '+'
 
 
-factory = SimpleFactory(board)
+factory = TelnetFactory(board)
 
 
 def printBoard():
     lines = list(_printBoard())
-    print '\n'.join(lines)
+    #print '\n'.join(lines)
     for protocol in factory.protocols:
         protocol.transport.write('\r\n'.join(lines) + '\r\n')
     
